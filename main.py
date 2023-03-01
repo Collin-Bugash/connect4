@@ -11,30 +11,44 @@ def init():
     with open('board.txt', 'r') as initial_board:
         # Create initial state
         for line in initial_board:
-            lines.append(line)
-            for spot in line:
-                if spot == "1":
-                    move_number += 1
-        # Set initial board to all lines except last
-        board = lines[:-1]
-        # Get who initially moves
-        next_move = int(lines[-1])
+            lines.append([*line[:-1]])
+            if len(line[:-1]) == 0:
+                next_move = line[0]
+            else:
+                for spot in line:
+                    if spot != "0":
+                        move_number += 1
 
-    return board, next_move, move_number
+        board = [[int(i) for i in line] for line in lines[:-1]]
+        board = np.array(board)
+
+    return board, int(next_move), move_number
 
 def interactive():
     board, next_move, move_number = init()
 
-    while True:
-        if next_move == 1:
-            print("computer is next")
-        else:
-            print("human is next")
+    scores = [get_score(board, 1), get_score(board, 2)]
 
-def print_board(board):
+    # while True:
+    if next_move == 1:
+        # Handle computer turn
+        if print_info(board, scores) == -1:
+            sys.exit()
+
+    else:
+        # Handle human turn
+        print("Human turn")
+
+def print_info(board, scores):
+    print("Board State:")
     for line in board:
         # Print line excluding \n
-        print(line[:-1])
+        print(line)
+    print(f"Player 1 Score: {scores[0]}")
+    print(f"Player 2 Score: {scores[1]}")
+    if np.any(board == 0) != True:
+        print("Board is full, ending game.")
+        return -1
 
 def get_score(board, player):
     score = 0
@@ -47,17 +61,13 @@ def get_score(board, player):
     for kernel in detection_kernels:
         score += np.sum(convolve2d(board == player, kernel, mode="valid") == 4)
     return score
+
+def computer_move(board):
+    return 1
     
+interactive()
 
 
-lines = []
-with open('board.txt', 'r') as initial_board:
-    # Create initial state
-    for line in initial_board:
-        lines.append([*line[:-1]])
-    lines = lines[:-1]
-    # Get who initially moves
-lines = [int(i) for i in lines]
 
-print(lines)
-# print(f"Score: {get_score(board, 1)}")
+
+
